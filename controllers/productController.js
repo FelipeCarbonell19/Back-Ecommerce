@@ -79,30 +79,63 @@ class ProductController {
    * @param {Object} res - Objeto de respuesta de Express.
    * @returns {Object} - Respuesta JSON con todos los productos.
    */
+  // static async getAll(req, res) {
+  //   try {
+  //     const { limit = 50, offset = 0 } = req.query;
+
+  //     const products = await Product.findAll(
+  //       parseInt(limit),
+  //       parseInt(offset)
+  //     );
+
+  //     const productsWithImages = products.map(product => ({
+  //       ...product,
+  //       image_url: product.image_url ?
+  //         `http://localhost:5000/uploads/products/${product.image_url}` :
+  //         null,
+  //       // Agregar thumbnail para lista
+  //       image_thumbnail: product.image_url ?
+  //         `http://localhost:5000/uploads/products/${product.image_url}` :
+  //         'https://placehold.co/250x192/e5e7eb/6b7280/png?text=Sin+Imagen'
+  //     }));
+
+  //     res.json({
+  //       success: true,
+  //       products: productsWithImages,
+  //       total: products.length
+  //     });
+  //   } catch (error) {
+  //     console.error('Error obteniendo productos:', error);
+  //     res.status(500).json({
+  //       success: false,
+  //       message: 'Error interno del servidor'
+  //     });
+  //   }
+  // }
+  // controllers/productController.js
+
   static async getAll(req, res) {
     try {
-      const { limit = 50, offset = 0 } = req.query;
+      const limit = parseInt(req.query.limit) || 50;
+      const offset = parseInt(req.query.offset) || 0;
 
-      const products = await Product.findAll(
-        parseInt(limit),
-        parseInt(offset)
-      );
+      const products = await Product.findAll(limit, offset);
+      const baseUrl = `${req.protocol}://${req.get('host')}`;
 
       const productsWithImages = products.map(product => ({
         ...product,
         image_url: product.image_url ?
-          `http://localhost:5000/uploads/products/${product.image_url}` :
+          `${baseUrl}/uploads/products/${product.image_url}` :
           null,
-        // Agregar thumbnail para lista
         image_thumbnail: product.image_url ?
-          `http://localhost:5000/uploads/products/${product.image_url}` :
+          `${baseUrl}/uploads/products/${product.image_url}` :
           'https://placehold.co/250x192/e5e7eb/6b7280/png?text=Sin+Imagen'
       }));
 
       res.json({
         success: true,
         products: productsWithImages,
-        total: products.length
+        total: products.length 
       });
     } catch (error) {
       console.error('Error obteniendo productos:', error);
