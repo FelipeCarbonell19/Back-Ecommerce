@@ -1,4 +1,4 @@
-const { pool } = require('../config/database');
+const { pool } = require("../config/database");
 
 /**
  * Clase para manejar las operaciones relacionadas con los productos en la base de datos.
@@ -20,10 +20,18 @@ class Product {
    * @returns {Promise<Object>} - Promesa que resuelve con los datos del producto creado.
    */
   static async create(productData) {
-    const { name, description, price, category_id, stock, image_url, created_by } = productData;
+    const {
+      name,
+      description,
+      price,
+      category_id,
+      stock,
+      image_url,
+      created_by,
+    } = productData;
     try {
       const [result] = await pool.execute(
-        'INSERT INTO products (name, description, price, category_id, stock, image_url, created_by) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        "INSERT INTO products (name, description, price, category_id, stock, image_url, created_by) VALUES (?, ?, ?, ?, ?, ?, ?)",
         [name, description, price, category_id, stock, image_url, created_by]
       );
       return { id: result.insertId, ...productData };
@@ -43,10 +51,10 @@ class Product {
    */
   static async findAll(limit = 50, offset = 0) {
     try {
-      const sql = 'SELECT * FROM products ORDER BY created_at DESC LIMIT 50';
-      const [rows] = await pool.execute(sql);
+      const [rows] = await pool.execute("SELECT * FROM products LIMIT 5");
       return rows;
     } catch (error) {
+      console.error("Error en findAll:", error);
       throw error;
     }
   }
@@ -90,10 +98,11 @@ class Product {
    * @returns {Promise<Object|null>} - Promesa que resuelve con el producto actualizado o null si no se encuentra.
    */
   static async update(id, productData) {
-    const { name, description, price, category_id, stock, image_url } = productData;
+    const { name, description, price, category_id, stock, image_url } =
+      productData;
     try {
       const [result] = await pool.execute(
-        'UPDATE products SET name = ?, description = ?, price = ?, category_id = ?, stock = ?, image_url = ? WHERE id = ?',
+        "UPDATE products SET name = ?, description = ?, price = ?, category_id = ?, stock = ?, image_url = ? WHERE id = ?",
         [name, description, price, category_id, stock, image_url, id]
       );
       if (result.affectedRows === 0) {
@@ -117,7 +126,7 @@ class Product {
     try {
       // Verificar si el producto está en pedidos antes de eliminar
       const [orderItems] = await pool.execute(
-        'SELECT COUNT(*) as count FROM order_items WHERE product_id = ?',
+        "SELECT COUNT(*) as count FROM order_items WHERE product_id = ?",
         [id]
       );
 
@@ -126,30 +135,33 @@ class Product {
           success: false,
           hasOrders: true,
           ordersCount: orderItems[0].count,
-          message: 'No se puede eliminar este producto porque está incluido en pedidos'
+          message:
+            "No se puede eliminar este producto porque está incluido en pedidos",
         };
       }
 
       // Si no está en pedidos, proceder con la eliminación
-      const [result] = await pool.execute(
-        'DELETE FROM products WHERE id = ?',
-        [id]
-      );
+      const [result] = await pool.execute("DELETE FROM products WHERE id = ?", [
+        id,
+      ]);
 
       return {
         success: result.affectedRows > 0,
         hasOrders: false,
-        message: result.affectedRows > 0 ? 'Producto eliminado' : 'Producto no encontrado'
+        message:
+          result.affectedRows > 0
+            ? "Producto eliminado"
+            : "Producto no encontrado",
       };
-
     } catch (error) {
       // Manejar error específico de foreign key constraint
-      if (error.code === 'ER_ROW_IS_REFERENCED_2') {
+      if (error.code === "ER_ROW_IS_REFERENCED_2") {
         return {
           success: false,
           hasOrders: true,
-          error: 'FOREIGN_KEY_CONSTRAINT',
-          message: 'No se puede eliminar este producto porque está referenciado en pedidos'
+          error: "FOREIGN_KEY_CONSTRAINT",
+          message:
+            "No se puede eliminar este producto porque está referenciado en pedidos",
         };
       }
 
