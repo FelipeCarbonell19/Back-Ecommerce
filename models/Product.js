@@ -44,20 +44,13 @@ class Product {
   static async findAll(limit = 50, offset = 0) {
     try {
       const [rows] = await pool.execute(
-        `SELECT p.*, c.name as category_name, u.name as created_by_name
-       FROM products p
-       LEFT JOIN categories c ON p.category_id = c.id
-       LEFT JOIN users u ON p.created_by = u.id
-       ORDER BY p.created_at DESC
-       LIMIT ?`,
-        [limit]
+        'SELECT * FROM products ORDER BY created_at DESC LIMIT 50'
       );
       return rows;
     } catch (error) {
       throw error;
     }
   }
-
   /**
    * Busca un producto por su ID.
    * @async
