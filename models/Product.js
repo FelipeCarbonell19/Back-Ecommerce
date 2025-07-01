@@ -43,9 +43,10 @@ class Product {
    */
   static async findAll(limit = 50, offset = 0) {
     try {
-      const [rows] = await pool.execute(
-        'SELECT * FROM products ORDER BY created_at DESC LIMIT 50'
-      );
+      const sql = 'SELECT * FROM products ORDER BY created_at DESC LIMIT ? OFFSET ?';
+      
+      const [rows] = await pool.execute(sql, [limit, offset]);
+      
       return rows;
     } catch (error) {
       throw error;
